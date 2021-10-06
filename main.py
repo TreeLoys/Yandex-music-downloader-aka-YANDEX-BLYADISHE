@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 # Created by Valera at 06.10.2021
 # YANDEX BLYADISHE - бля дай исчо
-"""Да не посмотрит этот репозиторий работодатель."""
+"""
+Да не посмотрит этот репозиторий работодатель. Админь.
+
+"""
 
 import logging
 import shelve
 import pickle
 import os
+from datetime import datetime
+
 from yandex_music import Client
 from yandex_music.exceptions import Captcha
 import click
-MUSICS_PATH = "D:\yandexMusics"
+
 logging.basicConfig(filename="logging.log", level=logging.INFO)
 log = logging.getLogger(__name__)
-
 sdb = shelve.open("shelve.db")
 
 
@@ -48,8 +52,7 @@ def main(login, password, folder_download):
     likedTracks = client.users_likes_tracks()
 
     for i, track in enumerate(likedTracks[numberLastDownloadedTrack:]):
-        with open("listDownloadedTrack.txt", "a+") as f:
-            f.write(str(pickle.dumps(track)) + "$$ENDOBJTRACK$$")
+
         # Пока что он как ID фигурирует
         print("####################")
         print(f"Track.id: {track.id}")
@@ -57,13 +60,23 @@ def main(login, password, folder_download):
         track_id = str(track.id)
         try:
             ftchTrack = track.fetch_track()
-            track_name = ""
+            track_name = ftchTrack.title
+            for x in ftchTrack.artists:
+                track_name += " " + x.name
+            # Виндоус фишки
+            track_name = track_name[:230]
             isTrackDownloaded = sdb.get(track_id, False)
-            print("fetch_track() успех! Трек не загружен. Начинаю загрузку.")
+            print(f"Имя трека: {track_name}")
+            print("Начинаю загрузку.")
             if not isTrackDownloaded:
-                ftchTrack.download(folder_download+f"/{numberLastDownloadedTrack}_{track_name}.mp3")
+                start_time = datetime.now()
+                ftchTrack.download(os.path.join(folder_download, f"{numberLastDownloadedTrack} {track_name}.mp3"))
+                end_time = datetime.now()
+                print('Время загрузки: {}'.format(end_time - start_time))
                 sdb[track_id] = True
                 sdb.sync()
+                with open("Список загруженных треков.txt", "a+") as f:
+                    f.write(f"{numberLastDownloadedTrack} {track_name}" + "\n")
                 print("Трек загружен!")
             else:
                 print(f"Warning!{track.id} Трек уже сохранен в базе!")
@@ -71,13 +84,11 @@ def main(login, password, folder_download):
             log.exception("При скачке трека он пошел по пизде...")
             with open(f"trackError/{i}.{track_id}.pickle", "w") as f:
                 f.write(str(pickle.dumps(track)) + "\r\n")
-            with open("listDownloadedTrack.txt", "a") as f:
-                f.write(f"$$ERRORNOTDOWNLOADED$${track_id}")
+            with open("Список ID НЕ загруженных треков.txt", "a+") as f:
+                f.write(track_id + "\n")
+        numberLastDownloadedTrack += 1
         sdb["numberLastDownloadedTrack"] = numberLastDownloadedTrack
         sdb.sync()
-        # Новая строка на трек
-        with open("listDownloadedTrack.txt", "a") as f:
-            f.write("\r\n")
 
 
 if __name__ == "__main__":
