@@ -51,23 +51,24 @@ def main(login, password, folder_download):
     print("Капча пройдена! Щя пойдет скачка")
     likedTracks = client.users_likes_tracks()
 
-    for i, track in enumerate(likedTracks[numberLastDownloadedTrack:]):
-
-        # Пока что он как ID фигурирует
-        print("####################")
-        print(f"Track.id: {track.id}")
-        print(f"Track.album_id: {track.album_id}")
-        track_id = str(track.id)
+    for i, track in enumerate(likedTracks):
         try:
+            track_id = str(track.id)
+            isTrackDownloaded = sdb.get(track_id, False)
+            if isTrackDownloaded:
+                continue
+            # Пока что он как ID фигурирует
+            print("####################")
+            print(f"Track.id: {track_id}")
+            print(f"Track.album_id: {track.album_id}")
             ftchTrack = track.fetch_track()
             track_name = ftchTrack.title
             for x in ftchTrack.artists:
                 track_name += " " + x.name
             # Виндоус фишки
             track_name = track_name[:230]
-            isTrackDownloaded = sdb.get(track_id, False)
             print(f"Имя трека: {track_name}")
-            print("Начинаю загрузку.")
+            print("Загружаю...")
             if not isTrackDownloaded:
                 start_time = datetime.now()
                 ftchTrack.download(os.path.join(folder_download, f"{numberLastDownloadedTrack} {track_name}.mp3"))
@@ -78,8 +79,6 @@ def main(login, password, folder_download):
                 with open("Список загруженных треков.txt", "a+") as f:
                     f.write(f"{numberLastDownloadedTrack} {track_name}" + "\n")
                 print("Трек загружен!")
-            else:
-                print(f"Warning!{track.id} Трек уже сохранен в базе!")
         except Exception as e:
             log.exception("При скачке трека он пошел по пизде...")
             with open(f"trackError/{i}.{track_id}.pickle", "w") as f:
