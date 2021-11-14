@@ -67,6 +67,18 @@ def main(login, password, folder_download):
                 track_name += " " + x.name
             # Виндоус фишки
             track_name = track_name[:230]
+            # Уборка невозможных символов в именах файлов
+            track_name = track_name.replace("$", "D")
+            track_name = track_name.replace("?", "Q")
+            track_name = track_name.replace(":", "T")
+            track_name = track_name.replace("/", "S")
+            track_name = track_name.replace("\\", "S")
+            track_name = track_name.replace('"', "'")
+            track_name = track_name.replace('*', "Z")
+            track_name = track_name.replace('|', "S")
+            track_name = track_name.replace('|', "S")
+
+
             print(f"Имя трека: {track_name}")
             print("Загружаю...")
             if not isTrackDownloaded:
