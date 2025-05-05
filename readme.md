@@ -1,5 +1,5 @@
-# YANDEX BLYADISHE 2021
-## Yandex music downloader aka YANDEX BLYADISHE 2021
+# YANDEX BLYADISHE 2025
+## Yandex music downloader aka YANDEX BLYADISHE 2025
 #### ANOTATION
 Ну что дружочек, ты решил `скачать музыку в yandex music`?
 Или `yandex music download all track`?
@@ -9,12 +9,13 @@
 
 #### HOW IT WORK aka Quick start
 Заходи в папушку куда клонирую данный репозиторий `git clone ...`
+Получи токен https://yandex-music.readthedocs.io/en/main/token.html затем
 .. code:: shell
 
     $ pip install yandex-music click
-    $ python main.py --login "EMAIL_СВОЙ" --password "СВОЙ_ПАРОЛ"
+    $ python main.py --token "ТОКЕН_СВОЙ"
 
-В следующий раз просто шебани 
+В следующий раз просто шебани  (в разработке)
 .. code:: shell
 
     $ python main.py --update_discography

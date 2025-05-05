@@ -13,7 +13,7 @@ import os
 from datetime import datetime
 
 from yandex_music import Client
-from yandex_music.exceptions import Captcha
+#from yandex_music.exceptions import Captcha
 import click
 
 logging.basicConfig(filename="logging.log", level=logging.INFO)
@@ -22,31 +22,16 @@ sdb = shelve.open("shelve.db")
 
 
 @click.command()
-@click.option("-l", "--login", required=True)
-@click.option("-p", "--password", required=True)
+@click.option("-t", "--token", required=True)
 @click.option("-df", "--folder-download", default="musics")
-def main(login, password, folder_download):
+def main(token, folder_download):
     numberLastDownloadedTrack = sdb.get("numberLastDownloadedTrack", 0)
 
     isAuthorize = False
 
     print("Инициирую клиент для скачки...")
-    client = None
-    captcha_key = None
-    captcha_answer = None
-    while not isAuthorize:
-        try:
-            client = Client.from_credentials(login, password, captcha_answer, captcha_key)
-            isAuthorize = True
-        except Captcha as e:
-            print("Ощибка! Капчу запросило зло!")
-            e.captcha.download('captcha.png')
-            os.system("captcha.png")
-            captcha_key = e.captcha.x_captcha_key
-            captcha_answer = input('Число с картинки: ')
-    if client is None:
-        print("Почему-то нет авторизации, все пошло по пизде. Выхожу. ")
-        exit(-1)
+    client = Client(token).init()
+    client.request.set_timeout(600)
 
     print("Капча пройдена! Щя пойдет скачка")
     likedTracks = client.users_likes_tracks()
